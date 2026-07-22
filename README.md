@@ -137,6 +137,9 @@ section. Add your changes under **[Unreleased]** as you work, then release.
 Then publish the Release on GitHub if `gh` isn't installed (repo → Releases → draft
 from the new tag). Installs on older versions will be prompted to update.
 
+Full guides in [`docs/releasing/`](docs/releasing/README.md):
+[manual release](docs/releasing/manual.md) · [release with GitHub CLI (+ install)](docs/releasing/github-cli.md).
+
 ## Contributing & feedback
 
 This is a personal project and is **open to feedback and suggestions**. Please:
