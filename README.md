@@ -122,6 +122,18 @@ MigrationSystem is a work in progress. Planned:
 
 Have a suggestion? Open an issue — feedback is welcome.
 
+### Releasing (maintainer)
+
+Cut a new version in one command — it bumps `VERSION`, commits, tags, and pushes
+(and publishes the GitHub Release if the `gh` CLI is installed):
+
+```bash
+composer release 1.1.0
+```
+
+Then publish the Release on GitHub if `gh` isn't installed (repo → Releases → draft
+from the new tag). Installs on older versions will be prompted to update.
+
 ## Contributing & feedback
 
 This is a personal project and is **open to feedback and suggestions**. Please:

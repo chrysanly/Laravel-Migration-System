@@ -51,6 +51,7 @@
             "npm install",
             "npm run build"
         ],
+        "release": "@php artisan app:release",
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "@php artisan dev"
