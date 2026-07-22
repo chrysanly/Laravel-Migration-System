@@ -3,6 +3,7 @@
 use App\Http\Controllers\DocsController;
 use App\Http\Controllers\MigrationController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\SystemUpdateController;
 use App\Http\Controllers\TableDesignController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,11 @@ Route::inertia('dashboard', 'dashboard')->name('dashboard');
 
 // In-app documentation (rendered from markdown).
 Route::get('docs', [DocsController::class, 'index'])->name('docs');
+
+// Self-update (checks this app's own repo for a newer version).
+Route::get('system/update/check', [SystemUpdateController::class, 'check'])->name('system.update.check');
+Route::post('system/update/run', [SystemUpdateController::class, 'run'])->name('system.update.run');
+Route::get('system/update/status', [SystemUpdateController::class, 'status'])->name('system.update.status');
 
 // Migration system — registered target projects + migrations.
 Route::get('projects', [ProjectController::class, 'index'])->name('projects.index');
