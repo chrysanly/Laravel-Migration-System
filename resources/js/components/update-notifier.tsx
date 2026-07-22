@@ -16,6 +16,8 @@ interface CheckResult {
     current: string;
     latest: string;
     update_available: boolean;
+    url?: string | null;
+    name?: string | null;
 }
 
 interface UpdateStatus {
@@ -141,6 +143,14 @@ export function UpdateNotifier() {
                                 <span className="font-mono">v{info.current}</span> →{' '}
                                 <span className="font-mono font-semibold text-foreground">v{info.latest}</span>.
                                 It will download and apply in the background — you can keep working.
+                                {info.url && (
+                                    <>
+                                        {' '}
+                                        <a href={info.url} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                                            Release notes
+                                        </a>
+                                    </>
+                                )}
                             </div>
                         </DialogDescription>
                     </DialogHeader>

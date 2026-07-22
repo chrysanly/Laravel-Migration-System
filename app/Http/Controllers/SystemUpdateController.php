@@ -5,38 +5,63 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\Process\Process;
 use Throwable;
 
 /**
- * Self-update: check for a newer version, kick off a background update, and report
- * progress. The update runs against THIS app's own repository.
+ * Self-update: check for a newer released version, kick off a background update, and
+ * report progress. The update runs against THIS app's own repository.
  */
 final class SystemUpdateController extends Controller
 {
-    private const REMOTE_VERSION_URL = 'https://raw.githubusercontent.com/chrysanly/Laravel-Migration-System/main/VERSION';
+    private const LATEST_RELEASE_URL = 'https://api.github.com/repos/chrysanly/Laravel-Migration-System/releases/latest';
 
     public function check(): JsonResponse
     {
         $current = $this->currentVersion();
-        $latest = $current;
 
-        try {
-            $body = trim(Http::timeout(6)->get(self::REMOTE_VERSION_URL)->body());
-            if ($body !== '' && preg_match('/^\d+\.\d+\.\d+/', $body) === 1) {
-                $latest = $body;
-            }
-        } catch (Throwable) {
-            // Offline or unreachable — treat as up to date.
-        }
+        // Cache the remote lookup to stay well under GitHub's unauthenticated rate limit.
+        $release = Cache::remember('system.update.latest', now()->addMinutes(30), fn (): array => $this->latestRelease());
+
+        $latest = $release['version'] ?? $current;
 
         return response()->json([
             'current' => $current,
             'latest' => $latest,
             'update_available' => version_compare($latest, $current, '>'),
+            'url' => $release['url'] ?? null,
+            'name' => $release['name'] ?? null,
         ]);
+    }
+
+    /**
+     * @return array{version: string|null, url: string|null, name: string|null}
+     */
+    private function latestRelease(): array
+    {
+        try {
+            $res = Http::withHeaders([
+                'User-Agent' => 'MigrationSystem',
+                'Accept' => 'application/vnd.github+json',
+            ])->timeout(6)->get(self::LATEST_RELEASE_URL);
+
+            if (! $res->ok()) {
+                return ['version' => null, 'url' => null, 'name' => null];
+            }
+
+            $tag = ltrim(trim((string) $res->json('tag_name')), 'vV');
+
+            return [
+                'version' => preg_match('/^\d+\.\d+\.\d+/', $tag) === 1 ? $tag : null,
+                'url' => $res->json('html_url'),
+                'name' => $res->json('name'),
+            ];
+        } catch (Throwable) {
+            return ['version' => null, 'url' => null, 'name' => null];
+        }
     }
 
     public function run(): JsonResponse
