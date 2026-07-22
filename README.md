@@ -12,6 +12,28 @@ own path and configuration**.
 Built by **Chrysanly John Roma**. Feedback and suggestions are welcome — see
 [Contributing & feedback](#contributing--feedback).
 
+> **🚧 Status: in active development (v1).** This is a work in progress and evolving.
+> **Next up (v2):** generate Eloquent **models and their relationships** from a project's
+> schema, plus **migrations for those models** — see [Roadmap](#roadmap).
+
+---
+
+## Screenshots
+
+| Projects | Project overview |
+| --- | --- |
+| ![Projects](.github/screenshots/01-projects.png) | ![Project overview](.github/screenshots/02-overview.png) |
+
+| Generate from an existing table | Add primary / foreign keys |
+| --- | --- |
+| ![Generate migration](.github/screenshots/03-generate.png) | ![Add keys](.github/screenshots/04-keys.png) |
+
+| Operation logs | Log detail (diagnose failures) |
+| --- | --- |
+| ![Logs](.github/screenshots/05-logs.png) | ![Log detail](.github/screenshots/06-log-detail.png) |
+
+_(Screenshots use a neutral demo project; no real project data is shown.)_
+
 ---
 
 ## What it does
@@ -88,6 +110,17 @@ composer dev             # or: npm run dev + php artisan serve
 Open the app, register a project by its folder path, and go.
 
 ---
+
+## Roadmap
+
+MigrationSystem is a work in progress. Planned:
+
+- **v2 — Models & relationships.** Generate Eloquent models and their relationships
+  (hasMany / belongsTo / belongsToMany, etc.) from a project's schema, and generate the
+  **migrations for those models**.
+- Further ideas (later): "migrate all pending" per project, rollback, and a connection test.
+
+Have a suggestion? Open an issue — feedback is welcome.
 
 ## Contributing & feedback
 

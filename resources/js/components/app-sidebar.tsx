@@ -47,14 +47,18 @@ export function AppSidebar() {
                     <SidebarGroupContent>
                         <SidebarMenu>
                             <SidebarMenuItem>
-                                {/* Repository — disabled for now */}
                                 <SidebarMenuButton
-                                    disabled
-                                    className="cursor-not-allowed text-neutral-600 opacity-50 dark:text-neutral-300"
+                                    asChild
+                                    className="text-neutral-600 hover:text-neutral-800 dark:text-neutral-300 dark:hover:text-neutral-100"
                                 >
-                                    <FolderGit2 className="h-5 w-5" />
-                                    <span>Repository</span>
-                                    <span className="ms-auto text-xs">soon</span>
+                                    <a
+                                        href="https://github.com/chrysanly/Laravel-Migration-System"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <FolderGit2 className="h-5 w-5" />
+                                        <span>Repository</span>
+                                    </a>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                             <SidebarMenuItem>

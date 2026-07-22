@@ -116,31 +116,40 @@ final readonly class MigrationScanner
             return [];
         }
 
-        // Dedupe by table+kind — a file referencing Schema::table('t') in both up()
-        // and down() is still a single "update" of that table.
-        $seen = [];
-        $add = static function (string $table, string $kind) use (&$seen): void {
-            $seen[$table.'|'.$kind] = ['table' => $table, 'kind' => $kind];
+        // One relationship per table per file. A file that creates a table IS the
+        // create for it — its own down() dropIfExists must not count as a separate
+        // "related" migration. Priority: create > update > rename > drop.
+        $priority = ['create' => 4, 'update' => 3, 'rename' => 2, 'drop' => 1];
+        $best = [];
+        $consider = static function (string $table, string $kind) use (&$best, $priority): void {
+            if (! isset($best[$table]) || $priority[$kind] > $priority[$best[$table]]) {
+                $best[$table] = $kind;
+            }
         };
 
         foreach ($this->matchTables($contents, '/Schema::create\(\s*[\'"]([^\'"]+)[\'"]/') as $t) {
-            $add($t, 'create');
+            $consider($t, 'create');
         }
         foreach ($this->matchTables($contents, '/Schema::table\(\s*[\'"]([^\'"]+)[\'"]/') as $t) {
-            $add($t, 'update');
+            $consider($t, 'update');
         }
         foreach ($this->matchTables($contents, '/Schema::drop(?:IfExists)?\(\s*[\'"]([^\'"]+)[\'"]/') as $t) {
-            $add($t, 'drop');
+            $consider($t, 'drop');
         }
         // Schema::rename('from', 'to') affects both names.
         if (preg_match_all('/Schema::rename\(\s*[\'"]([^\'"]+)[\'"]\s*,\s*[\'"]([^\'"]+)[\'"]/', $contents, $m, PREG_SET_ORDER) !== false) {
             foreach ($m as $pair) {
-                $add($pair[1], 'rename');
-                $add($pair[2], 'rename');
+                $consider($pair[1], 'rename');
+                $consider($pair[2], 'rename');
             }
         }
 
-        return array_values($seen);
+        $ops = [];
+        foreach ($best as $table => $kind) {
+            $ops[] = ['table' => $table, 'kind' => $kind];
+        }
+
+        return $ops;
     }
 
     /**
