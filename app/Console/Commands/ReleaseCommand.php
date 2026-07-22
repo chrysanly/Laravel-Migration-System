@@ -54,7 +54,8 @@ final class ReleaseCommand extends Command
             }
 
             File::put(base_path('VERSION'), $version."\n");
-            $this->runProcess('git add VERSION');
+            $this->updateChangelog($version);
+            $this->runProcess('git add VERSION CHANGELOG.md');
             $this->runProcess("git commit -m \"Release {$tag}\"");
             $this->runProcess("git tag -a {$tag} -m \"{$tag}\"");
 
@@ -86,6 +87,30 @@ final class ReleaseCommand extends Command
 
         $this->info('Publishing GitHub Release via gh…');
         $this->runProcess("gh release create {$tag} --title {$tag} --generate-notes");
+    }
+
+    /**
+     * Roll the CHANGELOG "[Unreleased]" section into a new dated version section,
+     * leaving a fresh empty "[Unreleased]" on top.
+     */
+    private function updateChangelog(string $version): void
+    {
+        $path = base_path('CHANGELOG.md');
+        if (! File::exists($path)) {
+            return;
+        }
+
+        $date = now()->toDateString();
+        $content = File::get($path);
+        $marker = '## [Unreleased]';
+
+        if (str_contains($content, $marker)) {
+            $content = str_replace($marker, "{$marker}\n\n## [{$version}] - {$date}", $content);
+        } else {
+            $content .= "\n## [{$version}] - {$date}\n";
+        }
+
+        File::put($path, $content);
     }
 
     private function runProcess(string $command): void

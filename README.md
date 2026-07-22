@@ -131,6 +131,9 @@ Cut a new version in one command — it bumps `VERSION`, commits, tags, and push
 composer release 1.1.0
 ```
 
+This also rolls the `CHANGELOG.md` **[Unreleased]** section into a dated `[1.1.0]`
+section. Add your changes under **[Unreleased]** as you work, then release.
+
 Then publish the Release on GitHub if `gh` isn't installed (repo → Releases → draft
 from the new tag). Installs on older versions will be prompted to update.
 
