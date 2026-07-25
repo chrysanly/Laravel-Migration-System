@@ -95,17 +95,26 @@ final readonly class MigrationRunner
     }
 
     /**
-     * Remove this app's DB_ and APP_ env vars from the child so the target project
-     * loads its OWN .env (Laravel's Dotenv never overrides already-set env vars, so
-     * inherited values would otherwise hijack the target's connection).
+     * Remove this app's DB_/APP_/DATABASE_ env vars from the child so the target
+     * project loads its OWN .env and behaves exactly as if the user ran artisan
+     * themselves. Laravel's Dotenv never overrides an already-set variable, so any
+     * inherited value would hijack the target's connection (e.g. forcing sqlite).
+     *
+     * Symfony Process builds the child env from getenv() AND $_ENV / $_SERVER, so
+     * every source must be scrubbed — clearing only getenv() is not enough.
      *
      * @return array<string, string|false>
      */
     private function cleanChildEnv(): array
     {
+        $keys = array_merge(
+            array_map('strval', array_keys(getenv())),
+            array_map('strval', array_keys($_ENV)),
+            array_map('strval', array_keys($_SERVER)),
+        );
+
         $env = [];
-        foreach (array_keys(getenv()) as $key) {
-            $key = (string) $key;
+        foreach (array_unique($keys) as $key) {
             if (preg_match('/^(DB_|APP_|DATABASE_)/', $key) === 1) {
                 $env[$key] = false; // false removes the variable from the child environment
             }

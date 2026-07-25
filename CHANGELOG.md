@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Running migrations no longer leaks this tool's own `DB_CONNECTION` into the target's
+  `artisan` process. The child environment is now scrubbed across `getenv()`, `$_ENV`,
+  and `$_SERVER`, so the target project always uses its own `.env` database (fixes a
+  false "sqlite database does not exist" error).
+
 ## [1.1.0] - 2026-07-25
 
 ### Added
