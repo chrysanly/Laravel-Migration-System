@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Pending migrations view: migration files that haven't run yet, grouped by table
+  (the create migration first, then its updates/changes), with a per-file **Migrate**
+  button and a **Migrate all pending** action.
+
 ## [1.0.0] - 2026-07-22
 
 ### Added

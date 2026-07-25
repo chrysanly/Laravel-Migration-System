@@ -28,6 +28,21 @@ export interface TableStatus {
     related_count: number;
 }
 
+export interface PendingChild {
+    file: string;
+    kind: string;
+    module: string | null;
+    location: string;
+}
+
+export interface PendingGroup {
+    table: string;
+    create: { file: string; module: string | null; location: string } | null;
+    create_migrated: boolean;
+    children: PendingChild[];
+    count: number;
+}
+
 export interface ColumnInfo {
     name: string;
     type: string;

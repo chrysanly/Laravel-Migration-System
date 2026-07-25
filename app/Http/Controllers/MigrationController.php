@@ -222,6 +222,36 @@ final class MigrationController extends Controller
     }
 
     /**
+     * Run ALL pending migrations for the project (Laravel orders them).
+     */
+    public function migrateAll(
+        Project $project,
+        MigrationRunner $runner,
+        OperationLogger $logger,
+    ): RedirectResponse {
+        $result = $runner->runAll($project);
+
+        $logger->log(
+            $project,
+            'migrate',
+            'all pending',
+            $result['ok'] ? 'success' : 'failed',
+            $result['output'],
+            $result['command'],
+            $result['php'],
+        );
+
+        Inertia::flash('toast', [
+            'type' => $result['ok'] ? 'success' : 'error',
+            'message' => $result['ok']
+                ? 'All pending migrations ran.'
+                : 'Migrate failed: '.Str::limit($result['output'], 200),
+        ]);
+
+        return to_route('projects.show', $project);
+    }
+
+    /**
      * @param  array<int, mixed>  $input
      * @return array<int, ForeignKeyDefinition>
      */

@@ -69,6 +69,22 @@ final class ProjectController extends Controller
         ]);
     }
 
+    public function pending(Project $project, ProjectInspectionService $inspection): Response|RedirectResponse
+    {
+        try {
+            $groups = $inspection->pendingMigrations($project);
+        } catch (DatabaseConnectionException $e) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $e->userMessage()]);
+
+            return to_route('projects.show', $project);
+        }
+
+        return Inertia::render('projects/pending', [
+            'project' => ['id' => $project->public_id, 'name' => $project->name],
+            'groups' => $groups,
+        ]);
+    }
+
     public function logs(Project $project): Response
     {
         $logs = $project->logs()->limit(200)->get()->map(fn ($log): array => [

@@ -37,13 +37,35 @@ final readonly class MigrationRunner
     }
 
     /**
+     * Run all pending migrations for the project (Laravel orders them).
+     *
+     * @return array{ok: bool, output: string, php: string, command: string}
+     */
+    public function runAll(Project $project): array
+    {
+        return $this->execute($project, ['artisan', 'migrate', '--force'], 'php artisan migrate --force');
+    }
+
+    /**
      * @return array{ok: bool, output: string, php: string, command: string}
      */
     public function run(Project $project, string $relativePath): array
     {
+        return $this->execute(
+            $project,
+            ['artisan', 'migrate', '--path='.$relativePath, '--force'],
+            "php artisan migrate --path={$relativePath} --force",
+        );
+    }
+
+    /**
+     * @param  array<int, string>  $args  artisan arguments (after the php binary)
+     * @return array{ok: bool, output: string, php: string, command: string}
+     */
+    private function execute(Project $project, array $args, string $command): array
+    {
         $config = $this->resolver->resolve($project);
         $php = $this->locator->locate($project, $config->driver, preferLowest: true);
-        $command = "php artisan migrate --path={$relativePath} --force";
 
         if ($php['binary'] === '') {
             return [
@@ -55,11 +77,11 @@ final readonly class MigrationRunner
         }
 
         $process = new Process(
-            [$php['binary'], 'artisan', 'migrate', '--path='.$relativePath, '--force'],
+            [$php['binary'], ...$args],
             rtrim($project->root_path, '/\\'),
             $this->cleanChildEnv(),
         );
-        $process->setTimeout(180);
+        $process->setTimeout(600);
         $process->run();
 
         $output = trim($process->getOutput()."\n".$process->getErrorOutput());

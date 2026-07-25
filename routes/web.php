@@ -25,6 +25,7 @@ Route::get('system/update/status', [SystemUpdateController::class, 'status'])->n
 Route::get('projects', [ProjectController::class, 'index'])->name('projects.index');
 Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
 Route::get('projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
+Route::get('projects/{project}/pending', [ProjectController::class, 'pending'])->name('projects.pending');
 Route::get('projects/{project}/logs', [ProjectController::class, 'logs'])->name('projects.logs');
 Route::delete('projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
 
@@ -32,8 +33,9 @@ Route::delete('projects/{project}', [ProjectController::class, 'destroy'])->name
 Route::get('projects/{project}/design', [TableDesignController::class, 'create'])->name('projects.design');
 Route::post('projects/{project}/design', [TableDesignController::class, 'store'])->name('projects.design.store');
 
-// Run a single migration file on the target.
+// Run migrations on the target.
 Route::post('projects/{project}/migrate', [MigrationController::class, 'migrate'])->name('projects.migrate');
+Route::post('projects/{project}/migrate/all', [MigrationController::class, 'migrateAll'])->name('projects.migrate.all');
 
 // {table} is the DB table name (not a model) — validated in the controllers/requests.
 Route::get('projects/{project}/tables/{table}', [MigrationController::class, 'preview'])

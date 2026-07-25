@@ -89,6 +89,81 @@ final readonly class ProjectInspectionService
     }
 
     /**
+     * Migration files that have NOT been run yet, grouped by table: the create
+     * migration (parent) followed by its children (update/drop/rename), in order.
+     * File-centric (includes tables that don't exist in the DB yet because their
+     * create migration hasn't run). Throws DatabaseConnectionException if the DB
+     * is unreachable (needed to read which migrations already ran).
+     *
+     * @return array<int, array{
+     *     table: string,
+     *     create: array{file: string, module: string|null, location: string}|null,
+     *     create_migrated: bool,
+     *     children: array<int, array{file: string, kind: string, module: string|null, location: string}>,
+     *     count: int
+     * }>
+     */
+    public function pendingMigrations(Project $project): array
+    {
+        $ran = array_flip($this->inspector->summary($project)['ran']);
+        $scan = $this->scanner->scan($project);
+
+        $isPending = static fn (string $file): bool => ! isset($ran[preg_replace('/\.php$/', '', $file)]);
+
+        $groups = [];
+        foreach ($scan as $table => $info) {
+            $create = $info['create'];
+
+            $createEntry = null;
+            $createMigrated = false;
+            if ($create !== null) {
+                if ($isPending($create['file'])) {
+                    $createEntry = ['file' => $create['file'], 'module' => $create['module'], 'location' => $create['location']];
+                } else {
+                    $createMigrated = true;
+                }
+            }
+
+            $children = [];
+            foreach ($info['related'] as $r) {
+                if ($isPending($r['file'])) {
+                    $children[] = [
+                        'file' => $r['file'],
+                        'kind' => $r['kind'],
+                        'module' => $r['module'],
+                        'location' => $r['location'],
+                    ];
+                }
+            }
+            usort($children, static fn (array $a, array $b): int => strcmp($a['file'], $b['file']));
+
+            if ($createEntry === null && $children === []) {
+                continue; // nothing pending for this table
+            }
+
+            // Earliest pending file → chronological ordering across the project.
+            $earliest = $createEntry['file'] ?? ($children[0]['file'] ?? '');
+
+            $groups[] = [
+                'table' => (string) $table,
+                'create' => $createEntry,
+                'create_migrated' => $createMigrated,
+                'children' => $children,
+                'count' => ($createEntry !== null ? 1 : 0) + count($children),
+                'earliest' => $earliest,
+            ];
+        }
+
+        usort($groups, static fn (array $a, array $b): int => strcmp($a['earliest'], $b['earliest']));
+
+        return array_map(static function (array $group): array {
+            unset($group['earliest']);
+
+            return $group;
+        }, $groups);
+    }
+
+    /**
      * Full schema + inferred keys for one table.
      *
      * @return array{schema: TableSchema, inferred: InferredKeys, existing_tables: array<int, string>}
