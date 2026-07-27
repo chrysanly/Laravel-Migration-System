@@ -115,25 +115,55 @@ export default function Rollback({ project, batches }: RollbackProps) {
 
                     {/* Batches */}
                     <div className="flex flex-col gap-4">
-                        {batches.map((batch, i) => (
-                            <Card key={batch.batch} className={i === 0 ? 'border-primary/50' : undefined}>
-                                <CardHeader className="flex-row items-center justify-between gap-2 py-3">
-                                    <CardTitle className="flex items-center gap-2 text-base">
-                                        <Layers className="size-4 text-muted-foreground" />
-                                        Batch {batch.batch}
-                                        {i === 0 && <Badge>latest</Badge>}
-                                    </CardTitle>
-                                    <Badge variant="secondary">{batch.count} migration{batch.count === 1 ? '' : 's'}</Badge>
-                                </CardHeader>
-                                <CardContent>
-                                    <ul className="flex flex-col gap-1 text-xs">
-                                        {batch.migrations.map((m) => (
-                                            <li key={m} className="font-mono break-all text-muted-foreground">{m}</li>
-                                        ))}
-                                    </ul>
-                                </CardContent>
-                            </Card>
-                        ))}
+                        {batches.map((batch, i) => {
+                            // Rolling back an older batch also rolls back every newer batch,
+                            // so the step count is the cumulative migrations from the top.
+                            const steps = batches.slice(0, i + 1).reduce((sum, b) => sum + b.count, 0);
+
+                            return (
+                                <Card key={batch.batch} className={i === 0 ? 'border-primary/50' : undefined}>
+                                    <CardHeader className="flex-row items-center justify-between gap-2 py-3">
+                                        <CardTitle className="flex items-center gap-2 text-base">
+                                            <Layers className="size-4 text-muted-foreground" />
+                                            Batch {batch.batch}
+                                            {i === 0 && <Badge>latest</Badge>}
+                                        </CardTitle>
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant="secondary">{batch.count} migration{batch.count === 1 ? '' : 's'}</Badge>
+                                            <RollbackButton
+                                                projectId={project.id}
+                                                size="sm"
+                                                variant="outline"
+                                                triggerLabel={i === 0 ? 'Rollback' : 'Roll back to here'}
+                                                title={i === 0 ? `Roll back batch ${batch.batch}?` : `Roll back to batch ${batch.batch}?`}
+                                                description={
+                                                    i === 0 ? (
+                                                        <>
+                                                            This reverses the {batch.count} migration{batch.count === 1 ? '' : 's'} in
+                                                            batch {batch.batch}. This changes the live database.
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            Rolling back batch {batch.batch} also rolls back the {i} newer batch
+                                                            {i === 1 ? '' : 'es'} — <strong>{steps} migrations total</strong>. This
+                                                            changes the live database.
+                                                        </>
+                                                    )
+                                                }
+                                                body={{ steps }}
+                                            />
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <ul className="flex flex-col gap-1 text-xs">
+                                            {batch.migrations.map((m) => (
+                                                <li key={m} className="font-mono break-all text-muted-foreground">{m}</li>
+                                            ))}
+                                        </ul>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
                     </div>
                 </>
             )}
@@ -150,6 +180,7 @@ function RollbackButton({
     description,
     body,
     variant = 'default',
+    size,
     disabled,
 }: {
     projectId: string;
@@ -158,6 +189,7 @@ function RollbackButton({
     description: React.ReactNode;
     body: Record<string, number>;
     variant?: 'default' | 'outline';
+    size?: 'sm';
     disabled?: boolean;
 }) {
     const [open, setOpen] = useState(false);
@@ -177,7 +209,7 @@ function RollbackButton({
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant={variant} disabled={disabled || loading}>
+                <Button variant={variant} size={size} disabled={disabled || loading}>
                     {loading ? <Spinner className="size-4" /> : <Undo2 className="size-4" />}
                     {loading ? 'Rolling back…' : triggerLabel}
                 </Button>
