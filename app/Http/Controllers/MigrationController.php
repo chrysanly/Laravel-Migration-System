@@ -252,6 +252,42 @@ final class MigrationController extends Controller
     }
 
     /**
+     * Roll back migrations on the target (last batch, or the last N migrations).
+     */
+    public function rollback(
+        Project $project,
+        Request $request,
+        MigrationRunner $runner,
+        OperationLogger $logger,
+    ): RedirectResponse {
+        $validated = $request->validate([
+            'steps' => ['nullable', 'integer', 'min:1', 'max:1000'],
+        ]);
+
+        $steps = isset($validated['steps']) ? (int) $validated['steps'] : null;
+        $result = $runner->rollback($project, $steps);
+
+        $logger->log(
+            $project,
+            'rollback',
+            $steps !== null ? "last {$steps} migration(s)" : 'last batch',
+            $result['ok'] ? 'success' : 'failed',
+            $result['output'],
+            $result['command'],
+            $result['php'],
+        );
+
+        Inertia::flash('toast', [
+            'type' => $result['ok'] ? 'success' : 'error',
+            'message' => $result['ok']
+                ? 'Rollback complete.'
+                : 'Rollback failed: '.Str::limit($result['output'], 200),
+        ]);
+
+        return to_route('projects.show', $project);
+    }
+
+    /**
      * @param  array<int, mixed>  $input
      * @return array<int, ForeignKeyDefinition>
      */

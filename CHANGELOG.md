@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Rollback view: the project's migrations table shown by batch (newest first), with
+  **Rollback last batch** and **roll back the last N migrations** actions
+  (`artisan migrate:rollback`), run under the project's own environment and logged.
+
+### Changed
+
+- Hide Laravel's internal `migrations` table from the tables overview.
+
 ### Fixed
 
 - Running migrations no longer leaks this tool's own `DB_CONNECTION` into the target's

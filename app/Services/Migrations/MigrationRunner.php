@@ -47,6 +47,25 @@ final readonly class MigrationRunner
     }
 
     /**
+     * Roll back migrations (their down()). With no $steps, rolls back the last batch;
+     * with $steps, rolls back that many of the most recent migrations.
+     *
+     * @return array{ok: bool, output: string, php: string, command: string}
+     */
+    public function rollback(Project $project, ?int $steps = null): array
+    {
+        $args = ['artisan', 'migrate:rollback', '--force'];
+        $command = 'php artisan migrate:rollback --force';
+
+        if ($steps !== null && $steps > 0) {
+            $args[] = '--step='.$steps;
+            $command .= " --step={$steps}";
+        }
+
+        return $this->execute($project, $args, $command);
+    }
+
+    /**
      * @return array{ok: bool, output: string, php: string, command: string}
      */
     public function run(Project $project, string $relativePath): array

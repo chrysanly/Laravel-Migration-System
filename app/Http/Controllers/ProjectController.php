@@ -85,6 +85,22 @@ final class ProjectController extends Controller
         ]);
     }
 
+    public function rollback(Project $project, ProjectInspectionService $inspection): Response|RedirectResponse
+    {
+        try {
+            $batches = $inspection->migratedBatches($project);
+        } catch (DatabaseConnectionException $e) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $e->userMessage()]);
+
+            return to_route('projects.show', $project);
+        }
+
+        return Inertia::render('projects/rollback', [
+            'project' => ['id' => $project->public_id, 'name' => $project->name],
+            'batches' => $batches,
+        ]);
+    }
+
     public function logs(Project $project): Response
     {
         $logs = $project->logs()->limit(200)->get()->map(fn ($log): array => [

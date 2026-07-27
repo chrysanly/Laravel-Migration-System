@@ -28,6 +28,12 @@ export interface TableStatus {
     related_count: number;
 }
 
+export interface MigratedBatch {
+    batch: number;
+    migrations: string[];
+    count: number;
+}
+
 export interface PendingChild {
     file: string;
     kind: string;

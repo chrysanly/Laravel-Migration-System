@@ -12,6 +12,7 @@ import {
     Plus,
     RefreshCw,
     ScrollText,
+    Undo2,
     Wand2,
     XCircle,
 } from 'lucide-react';
@@ -94,6 +95,11 @@ export default function ProjectShow({ project, tables, connectionError, php, con
                     <Button asChild size="sm" variant="outline">
                         <Link href={`/projects/${project.id}/pending`}>
                             <ListChecks className="size-4" /> Pending
+                        </Link>
+                    </Button>
+                    <Button asChild size="sm" variant="outline">
+                        <Link href={`/projects/${project.id}/rollback`}>
+                            <Undo2 className="size-4" /> Rollback
                         </Link>
                     </Button>
                     <Button asChild size="sm" variant="outline">

@@ -49,6 +49,21 @@ final readonly class TargetIntrospector
     }
 
     /**
+     * Rows from the target's `migrations` table (name + batch), newest first.
+     *
+     * @return array<int, array{migration: string, batch: int}>
+     */
+    public function migrated(Project $project): array
+    {
+        $payload = $this->run($project, 'migrated');
+
+        /** @var array<int, array{migration: string, batch: int}> $rows */
+        $rows = $payload['migrated'] ?? [];
+
+        return array_values($rows);
+    }
+
+    /**
      * Per-table {pk, fks} plus the migrations recorded as run, in one call.
      *
      * @return array{tables: array<string, array{pk: bool, fks: int}>, ran: array<int, string>}

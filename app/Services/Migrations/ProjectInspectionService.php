@@ -49,6 +49,10 @@ final readonly class ProjectInspectionService
 
         $rows = [];
         foreach ($summary['tables'] as $table => $keys) {
+            if ($table === 'migrations') {
+                continue; // Laravel's internal migration tracker — not a project table.
+            }
+
             $entry = $scan[$table] ?? ['create' => null, 'related' => []];
             $create = $entry['create'];
 
@@ -161,6 +165,30 @@ final readonly class ProjectInspectionService
 
             return $group;
         }, $groups);
+    }
+
+    /**
+     * The target's ran migrations grouped by batch, newest batch first — for rollback.
+     * Throws DatabaseConnectionException if the DB is unreachable.
+     *
+     * @return array<int, array{batch: int, migrations: array<int, string>, count: int}>
+     */
+    public function migratedBatches(Project $project): array
+    {
+        $rows = $this->inspector->migrated($project);
+
+        $byBatch = [];
+        foreach ($rows as $row) {
+            $byBatch[$row['batch']][] = $row['migration'];
+        }
+        krsort($byBatch); // newest batch first
+
+        $out = [];
+        foreach ($byBatch as $batch => $migrations) {
+            $out[] = ['batch' => (int) $batch, 'migrations' => $migrations, 'count' => count($migrations)];
+        }
+
+        return $out;
     }
 
     /**

@@ -66,6 +66,9 @@ try {
                 'ran' => ranMigrations($pdo, $driver, $database),
             ]);
             // no break
+        case 'migrated':
+            ok(['migrated' => migratedList($pdo, $driver, $database)]);
+            // no break
         case 'table':
             if ($table === '') {
                 fail('missing table');
@@ -226,6 +229,30 @@ function ranMigrations(PDO $pdo, string $driver, string $database): array
         $rows = $pdo->query('SELECT migration FROM migrations')->fetchAll(PDO::FETCH_COLUMN);
 
         return array_values(array_map('strval', $rows));
+    } catch (Throwable) {
+        return [];
+    }
+}
+
+/**
+ * Rows from the `migrations` table (name + batch), for the rollback view.
+ *
+ * @return array<int, array{migration: string, batch: int}>
+ */
+function migratedList(PDO $pdo, string $driver, string $database): array
+{
+    $tables = listTables($pdo, $driver, $database);
+    if (! in_array('migrations', $tables, true)) {
+        return [];
+    }
+
+    try {
+        $rows = $pdo->query('SELECT migration, batch FROM migrations ORDER BY batch DESC, migration DESC')->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(
+            static fn (array $r): array => ['migration' => (string) $r['migration'], 'batch' => (int) $r['batch']],
+            $rows,
+        );
     } catch (Throwable) {
         return [];
     }

@@ -40,6 +40,16 @@ final readonly class SchemaInspector
         return $this->introspector->summary($project);
     }
 
+    /**
+     * Rows from the target's `migrations` table (name + batch).
+     *
+     * @return array<int, array{migration: string, batch: int}>
+     */
+    public function migrated(Project $project): array
+    {
+        return $this->introspector->migrated($project);
+    }
+
     public function inspect(Project $project, string $table): TableSchema
     {
         $raw = $this->introspector->table($project, $table);
