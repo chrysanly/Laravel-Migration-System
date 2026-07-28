@@ -27,6 +27,7 @@ Route::post('projects', [ProjectController::class, 'store'])->name('projects.sto
 Route::get('projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
 Route::get('projects/{project}/pending', [ProjectController::class, 'pending'])->name('projects.pending');
 Route::get('projects/{project}/rollback', [ProjectController::class, 'rollback'])->name('projects.rollback');
+Route::get('projects/{project}/seeders', [ProjectController::class, 'seeders'])->name('projects.seeders');
 Route::get('projects/{project}/logs', [ProjectController::class, 'logs'])->name('projects.logs');
 Route::delete('projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
 
@@ -38,6 +39,7 @@ Route::post('projects/{project}/design', [TableDesignController::class, 'store']
 Route::post('projects/{project}/migrate', [MigrationController::class, 'migrate'])->name('projects.migrate');
 Route::post('projects/{project}/migrate/all', [MigrationController::class, 'migrateAll'])->name('projects.migrate.all');
 Route::post('projects/{project}/rollback', [MigrationController::class, 'rollback'])->name('projects.rollback.run');
+Route::post('projects/{project}/seed', [MigrationController::class, 'seed'])->name('projects.seed');
 
 // {table} is the DB table name (not a model) — validated in the controllers/requests.
 Route::get('projects/{project}/tables/{table}', [MigrationController::class, 'preview'])

@@ -28,6 +28,15 @@ export interface TableStatus {
     related_count: number;
 }
 
+export interface SeederInfo {
+    name: string;
+    fqcn: string;
+    file: string;
+    module: string | null;
+    location: 'root' | 'module' | string;
+    code: string;
+}
+
 export interface MigratedBatch {
     batch: number;
     migrations: string[];

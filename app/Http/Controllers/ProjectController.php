@@ -12,6 +12,7 @@ use App\Models\Project;
 use App\Services\Migrations\ProjectInspectionService;
 use App\Services\Projects\TargetDatabaseResolver;
 use App\Services\Projects\TargetIntrospector;
+use App\Services\Seeders\SeederScanner;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -82,6 +83,14 @@ final class ProjectController extends Controller
         return Inertia::render('projects/pending', [
             'project' => ['id' => $project->public_id, 'name' => $project->name],
             'groups' => $groups,
+        ]);
+    }
+
+    public function seeders(Project $project, SeederScanner $scanner): Response
+    {
+        return Inertia::render('projects/seeders', [
+            'project' => ['id' => $project->public_id, 'name' => $project->name],
+            'seeders' => $scanner->scan($project),
         ]);
     }
 

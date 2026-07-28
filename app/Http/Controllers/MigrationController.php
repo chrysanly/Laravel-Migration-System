@@ -23,6 +23,7 @@ use App\Services\Migrations\OperationLogger;
 use App\Services\Migrations\PostGenerate;
 use App\Services\Migrations\ProjectInspectionService;
 use App\Services\Projects\TargetProjectPaths;
+use App\Services\Seeders\SeederScanner;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -285,6 +286,44 @@ final class MigrationController extends Controller
         ]);
 
         return to_route('projects.show', $project);
+    }
+
+    /**
+     * Run a seeder class on the target (validated against the project's own seeders).
+     */
+    public function seed(
+        Project $project,
+        Request $request,
+        SeederScanner $scanner,
+        MigrationRunner $runner,
+        OperationLogger $logger,
+    ): RedirectResponse {
+        $class = (string) $request->input('class', '');
+
+        if (! in_array($class, $scanner->classNames($project), true)) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'Unknown seeder.']);
+
+            return back();
+        }
+
+        $result = $runner->seed($project, $class);
+
+        $logger->log(
+            $project,
+            'seed',
+            $class,
+            $result['ok'] ? 'success' : 'failed',
+            $result['output'],
+            $result['command'],
+            $result['php'],
+        );
+
+        Inertia::flash('toast', [
+            'type' => $result['ok'] ? 'success' : 'error',
+            'message' => $result['ok'] ? 'Seeder ran successfully.' : 'Seeder failed: '.Str::limit($result['output'], 200),
+        ]);
+
+        return back();
     }
 
     /**

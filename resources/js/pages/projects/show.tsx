@@ -12,6 +12,7 @@ import {
     Plus,
     RefreshCw,
     ScrollText,
+    Sprout,
     Undo2,
     Wand2,
     XCircle,
@@ -100,6 +101,11 @@ export default function ProjectShow({ project, tables, connectionError, php, con
                     <Button asChild size="sm" variant="outline">
                         <Link href={`/projects/${project.id}/rollback`}>
                             <Undo2 className="size-4" /> Rollback
+                        </Link>
+                    </Button>
+                    <Button asChild size="sm" variant="outline">
+                        <Link href={`/projects/${project.id}/seeders`}>
+                            <Sprout className="size-4" /> Seeders
                         </Link>
                     </Button>
                     <Button asChild size="sm" variant="outline">

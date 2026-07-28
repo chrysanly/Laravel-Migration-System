@@ -47,6 +47,20 @@ final readonly class MigrationRunner
     }
 
     /**
+     * Run a seeder class on the target (db:seed --class=<fqcn> --force).
+     *
+     * @return array{ok: bool, output: string, php: string, command: string}
+     */
+    public function seed(Project $project, string $class): array
+    {
+        return $this->execute(
+            $project,
+            ['artisan', 'db:seed', '--class='.$class, '--force'],
+            "php artisan db:seed --class={$class} --force",
+        );
+    }
+
+    /**
      * Roll back migrations (their down()). With no $steps, rolls back the last batch;
      * with $steps, rolls back that many of the most recent migrations.
      *

@@ -9,9 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Seeders view: list every seeder (root and module), preview its code, and run it
+  (`artisan db:seed --class`) from the list or from the preview — under the project's
+  own environment and logged.
 - Rollback view: the project's migrations table shown by batch (newest first), with
-  **Rollback last batch** and **roll back the last N migrations** actions
-  (`artisan migrate:rollback`), run under the project's own environment and logged.
+  **Rollback last batch**, **roll back to a batch**, and **roll back the last N
+  migrations** actions (`artisan migrate:rollback`), run under the project's own
+  environment and logged.
 
 ### Changed
 
